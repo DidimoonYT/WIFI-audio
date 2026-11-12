@@ -374,7 +374,6 @@
         const win = sum('.exe');
         const apk = sum('.apk');
         const total = win + apk;
-        if (!total) return;
         show(document.getElementById('dlTotalValue'), fmt(total));
         document.getElementById('dlTotal').hidden = false;
         show(document.getElementById('dlWin'), 'Скачано ' + fmt(win) + ' раз');
