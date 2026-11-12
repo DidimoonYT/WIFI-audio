@@ -1,6 +1,8 @@
 package com.pcsoundlink.app;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
     private MaterialButton btnConnect;
     private MaterialButton btnTouchpad;
     private MaterialButton btnDonate;
+    private MaterialButton btnCopyPcLink;
     private EditText editManualIp;
     private MaterialSwitch switchAutoConnect;
     private MaterialSwitch switchMute;
@@ -111,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
         btnConnect = findViewById(R.id.btnConnect);
         btnTouchpad = findViewById(R.id.btnTouchpad);
         btnDonate = findViewById(R.id.btnDonate);
+        btnCopyPcLink = findViewById(R.id.btnCopyPcLink);
         editManualIp = findViewById(R.id.editManualIp);
         switchAutoConnect = findViewById(R.id.switchAutoConnect);
         switchMute = findViewById(R.id.switchMute);
@@ -164,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
 
         btnTouchpad.setOnClickListener(v -> openTouchpad());
         btnDonate.setOnClickListener(v -> openDonate());
+        btnCopyPcLink.setOnClickListener(v -> copyPcLink());
 
         switchAutoConnect.setChecked(prefs.getBoolean("auto_connect", true));
         switchAutoConnect.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -409,6 +414,15 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
         connectedServerName = target.name;
         StreamService.start(this);
         engine.connect(target);
+    }
+
+    private void copyPcLink() {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard == null) {
+            return;
+        }
+        clipboard.setPrimaryClip(ClipData.newPlainText("WIFI audio", getString(R.string.pc_app_url)));
+        Toast.makeText(this, R.string.link_copied, Toast.LENGTH_SHORT).show();
     }
 
     private void openDonate() {

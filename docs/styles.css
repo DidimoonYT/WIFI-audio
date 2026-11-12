@@ -309,6 +309,22 @@ section { padding: 76px 0; }
 .support-card .support-text { flex: 1 1 320px; }
 .support-card .btn { flex: none; }
 
+.dl-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  background: var(--card);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-size: 13px;
+}
+.dl-total b { color: var(--text); }
+.dl-total .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.dl-total[hidden] { display: none; }
+.metric { color: var(--brand); }
+
 /* faq */
 details {
   background: var(--card);

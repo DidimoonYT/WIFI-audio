@@ -214,6 +214,10 @@
         <div class="kicker">Скачать</div>
         <h2>Начните за минуту</h2>
         <p>Сервер и приложение бесплатны. Исходный код открыт на GitHub.</p>
+        <div class="dl-total" id="dlTotal" hidden>
+          <span class="dot"></span>
+          Уже скачали <b id="dlTotalValue">0</b> <span id="dlTotalWord">раз</span>
+        </div>
       </div>
 
       <div class="grid g2 download-grid">
@@ -226,6 +230,7 @@
             <p>Портативный exe. Не требует установки, сам открывает порты брандмауэра.</p>
           </div>
           <div class="meta">Windows 10 / 11 · x64 · ~4 МБ</div>
+          <div class="meta metric" id="dlWin" hidden></div>
           <a class="btn primary" id="dlWindows" href="https://github.com/DidimoonYT/WIFI-audio/releases/latest/download/WIFI-audio-windows.exe" rel="noopener">
             Скачать сервер
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
@@ -241,6 +246,7 @@
             <p>Приёмник звука, экран ПК, тачпад и клавиатура в одном приложении.</p>
           </div>
           <div class="meta">Android 8.0+ · APK · RU / EN</div>
+          <div class="meta metric" id="dlApk" hidden></div>
           <a class="btn secondary" id="dlAndroid" href="https://github.com/DidimoonYT/WIFI-audio/releases/latest/download/WIFI-audio-android.apk" rel="noopener">
             Скачать APK
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
@@ -333,8 +339,7 @@
     }
   });
 
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const items = document.querySelectorAll('.reveal');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;  const items = document.querySelectorAll('.reveal');
   if (reduce || !('IntersectionObserver' in window)) {
     items.forEach(el => el.classList.add('in'));
   } else {
@@ -348,6 +353,35 @@
     }, { rootMargin: '0px 0px -60px 0px', threshold: 0.08 });
     items.forEach(el => io.observe(el));
   }
+
+  // Счётчик скачиваний из GitHub Releases
+  (function () {
+    const api = 'https://api.github.com/repos/DidimoonYT/WIFI-audio/releases';
+    const fmt = (n) => new Intl.NumberFormat('ru-RU').format(n);
+    const show = (el, text) => {
+      if (!el) return;
+      el.textContent = text;
+      el.hidden = false;
+    };
+    fetch(api, { headers: { Accept: 'application/vnd.github+json' } })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('api'))))
+      .then((releases) => {
+        const assets = releases.flatMap((r) => r.assets || []);
+        const sum = (ext) =>
+          assets
+            .filter((a) => a.name.toLowerCase().endsWith(ext))
+            .reduce((total, a) => total + (a.download_count || 0), 0);
+        const win = sum('.exe');
+        const apk = sum('.apk');
+        const total = win + apk;
+        if (!total) return;
+        show(document.getElementById('dlTotalValue'), fmt(total));
+        document.getElementById('dlTotal').hidden = false;
+        show(document.getElementById('dlWin'), 'Скачано ' + fmt(win) + ' раз');
+        show(document.getElementById('dlApk'), 'Скачано ' + fmt(apk) + ' раз');
+      })
+      .catch(() => {});
+  })();
 </script>
 </body>
 </html>

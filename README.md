@@ -1,5 +1,7 @@
 # WIFI audio 🔊📱
 
+![Downloads](https://img.shields.io/github/downloads/DidimoonYT/WIFI-audio/total?label=downloads&color=7DA2FF)
+
 [Сайт](https://didimoonyt.github.io/WIFI-audio/) · [Скачать](https://github.com/DidimoonYT/WIFI-audio/releases) · [Поддержать](https://www.donationalerts.com/r/didimoon)
 
 **Передача звука с компьютера на телефон по локальной сети и Wi‑Fi.**

@@ -29,6 +29,8 @@ const BRAND_TEXT: Color32 = Color32::from_rgb(20, 18, 24); // текст на br
 const WARN_BG: Color32 = Color32::from_rgb(255, 247, 237);
 const WARN_BORDER: Color32 = Color32::from_rgb(253, 186, 116);
 const WARN_TEXT: Color32 = Color32::from_rgb(140, 62, 9);
+const ANDROID_APP_URL: &str =
+    "https://github.com/DidimoonYT/WIFI-audio/releases/latest/download/WIFI-audio-android.apk";
 
 pub struct App {
     config: Config,
@@ -638,6 +640,33 @@ impl eframe::App for App {
                 });
 
                 ui.add_space(4.0);
+                section_card(
+                    ui,
+                    i18n::t("Приложение для телефона", "Phone app"),
+                    |ui| {
+                        ui.label(
+                            RichText::new(i18n::t(
+                                "Нужен приёмник звука на Android? Скачайте приложение — это тот же APK, что на сайте.",
+                                "Need the Android receiver? Download the app — the same APK as on the site.",
+                            ))
+                            .size(12.0)
+                            .color(MUTED),
+                        );
+                        ui.add_space(8.0);
+                        if outlined_button(
+                            ui,
+                            i18n::t("Скачать для Android", "Download for Android"),
+                        )
+                        .clicked()
+                        {
+                            open_url(ANDROID_APP_URL);
+                        }
+                        ui.add_space(4.0);
+                        ui.label(RichText::new(ANDROID_APP_URL).size(10.0).color(DIM));
+                    },
+                );
+
+                ui.add_space(4.0);
                 section_card(ui, i18n::t("Журнал", "Log"), |ui| {
                     egui::Frame::none()
                         .fill(BG)
@@ -675,6 +704,20 @@ impl eframe::App for App {
             });
 
                 ctx.request_repaint_after(Duration::from_millis(400));
+    }
+}
+
+/// Открывает ссылку в браузере по умолчанию.
+fn open_url(url: &str) {
+    #[cfg(target_os = "windows")]
+    {
+        let _ = std::process::Command::new("cmd")
+            .args(["/C", "start", "", url])
+            .spawn();
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = std::process::Command::new("xdg-open").arg(url).spawn();
     }
 }
 

@@ -98,8 +98,12 @@
     <string name="err_mute_toggle">Failed to toggle PC sound: %1$s</string>
     <string name="log_muted_pc">PC speakers muted</string>
     <string name="log_unmuted_pc">PC sound turned on</string>
-    <string name="donate_title">Support the project</string>
-    <string name="donate_text">WIFI audio is free and has no ads. If the project is useful to you, you can support its development.</string>
+    <string name="donate_title">Support the project</string>    <string name="donate_text">WIFI audio is free and has no ads. If the project is useful to you, you can support its development.</string>
     <string name="donate_button">Donate</string>
     <string name="donate_error">Could not open the donation page</string>
+    <string name="pc_app_title">Computer app</string>
+    <string name="pc_app_text">Download the Windows server on your computer using the link below. Copy it and open it on the PC.</string>
+    <string name="copy_link">Copy link</string>
+    <string name="link_copied">Link copied</string>
+    <string name="pc_app_url" translatable="false">https://github.com/DidimoonYT/WIFI-audio/releases/latest/download/WIFI-audio-windows.exe</string>
 </resources>

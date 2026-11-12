@@ -102,4 +102,9 @@
     <string name="donate_text">WIFI audio бесплатен и без рекламы. Если проект вам полезен, можно поддержать разработку.</string>
     <string name="donate_button">Поддержать</string>
     <string name="donate_error">Не удалось открыть страницу доната</string>
+    <string name="pc_app_title">Приложение для компьютера</string>
+    <string name="pc_app_text">Скачайте сервер для Windows на компьютере по ссылке ниже. Скопируйте её и откройте на ПК.</string>
+    <string name="copy_link">Скопировать ссылку</string>
+    <string name="link_copied">Ссылка скопирована</string>
+    <string name="pc_app_url" translatable="false">https://github.com/DidimoonYT/WIFI-audio/releases/latest/download/WIFI-audio-windows.exe</string>
 </resources>
