@@ -13,6 +13,7 @@ use wasapi::{
 };
 
 use crate::applog::log;
+use crate::i18n::t;
 use crate::mute::MuteController;
 use crate::protocol::{
     audio_header, CHANNELS, CHUNK_BYTES, FRAME_MS, RATE,
@@ -64,18 +65,25 @@ fn find_device(enumerator: &DeviceEnumerator, wanted: Option<&str>) -> Result<De
                 }
             }
         }
-        log(format!("Устройство «{wanted}» не найдено, использую системное"));
+        log(format!(
+            "{} «{wanted}» — {}",
+            t("Устройство", "Device"),
+            t(
+                "не найдено, использую системное",
+                "not found, using the system default"
+            )
+        ));
     }
     enumerator
         .get_default_device(Direction::Render)
-        .map_err(|e| anyhow!("не найдено устройство вывода: {e}"))
+        .map_err(|e| anyhow!("{}: {e}", t("не найдено устройство вывода", "no output device found")))
 }
 
 fn parse_format(format: &WaveFormat) -> Result<FormatInfo> {
     let bits = format.get_bitspersample() as usize;
     let subformat = format
         .get_subformat()
-        .map_err(|e| anyhow!("неизвестный формат звука: {e}"))?;
+        .map_err(|e| anyhow!("{}: {e}", t("неизвестный формат звука", "unknown audio format")))?;
     Ok(FormatInfo {
         channels: format.get_nchannels() as usize,
         bits,
@@ -86,11 +94,11 @@ fn parse_format(format: &WaveFormat) -> Result<FormatInfo> {
 fn convert_packet(raw: &[u8], info: FormatInfo, out: &mut Vec<i16>) -> Result<()> {
     let bytes_per_sample = info.bits / 8;
     if bytes_per_sample == 0 || info.channels == 0 {
-        return Err(anyhow!("некорректный формат звука"));
+        return Err(anyhow!(t("некорректный формат звука", "invalid audio format")));
     }
     let frame_bytes = bytes_per_sample * info.channels;
     if frame_bytes == 0 {
-        return Err(anyhow!("некорректный формат звука"));
+        return Err(anyhow!(t("некорректный формат звука", "invalid audio format")));
     }
 
     for frame in raw.chunks_exact(frame_bytes) {
@@ -111,21 +119,25 @@ fn sample_at(frame: &[u8], channel: usize, info: FormatInfo) -> Result<i16> {
     let value = if info.float && info.bits == 32 {
         let bytes: [u8; 4] = frame[offset..offset + 4]
             .try_into()
-            .map_err(|_| anyhow!("короткий звуковой пакет"))?;
+            .map_err(|_| anyhow!(t("короткий звуковой пакет", "short audio packet")))?;
         let sample = f32::from_le_bytes(bytes);
         (sample.clamp(-1.0, 1.0) * 32767.0) as i16
     } else if info.bits == 16 {
         let bytes: [u8; 2] = frame[offset..offset + 2]
             .try_into()
-            .map_err(|_| anyhow!("короткий звуковой пакет"))?;
+            .map_err(|_| anyhow!(t("короткий звуковой пакет", "short audio packet")))?;
         i16::from_le_bytes(bytes)
     } else if info.bits == 32 {
         let bytes: [u8; 4] = frame[offset..offset + 4]
             .try_into()
-            .map_err(|_| anyhow!("короткий звуковой пакет"))?;
+            .map_err(|_| anyhow!(t("короткий звуковой пакет", "short audio packet")))?;
         (i32::from_le_bytes(bytes) >> 16) as i16
     } else {
-        return Err(anyhow!("неподдерживаемый формат: {} бит", info.bits));
+        return Err(anyhow!(
+            "{}: {}",
+            t("неподдерживаемый формат", "unsupported format"),
+            info.bits
+        ));
     };
     Ok(value)
 }
@@ -170,7 +182,10 @@ impl AudioSession {
                 );
                 if let Err(err) = result {
                     let text = err.to_string();
-                    log(format!("Ошибка захвата звука: {text}"));
+                    log(format!(
+                        "{}: {text}",
+                        t("Ошибка захвата звука", "Audio capture error")
+                    ));
                     if let Ok(mut slot) = thread_error.lock() {
                         *slot = Some(text);
                     }
@@ -231,10 +246,12 @@ fn capture_loop(
     let result = (|| -> Result<(wasapi::AudioClient, AudioCaptureClient, String, FormatInfo)> {
         let enumerator = DeviceEnumerator::new().map_err(|e| anyhow!("WASAPI: {e}"))?;
         let device = find_device(&enumerator, device_name.as_deref())?;
-        let name = device.get_friendlyname().unwrap_or_else(|_| "системное".to_string());
+        let name = device
+            .get_friendlyname()
+            .unwrap_or_else(|_| t("системное", "system default").to_string());
         let mut client = device
             .get_iaudioclient()
-            .map_err(|e| anyhow!("не удалось открыть устройство: {e}"))?;
+            .map_err(|e| anyhow!("{}: {e}", t("не удалось открыть устройство", "failed to open the device")))?;
 
         let desired = WaveFormat::new(
             16,
@@ -258,16 +275,26 @@ fn capture_loop(
             Ok(()) => {}
             Err(first_error) => {
                 log(format!(
-                    "Автоконвертация 48 кГц недоступна ({first_error}), пробую формат устройства"
+                    "{} ({first_error}), {}",
+                    t(
+                        "Автоконвертация 48 кГц недоступна",
+                        "48 kHz autoconversion is unavailable"
+                    ),
+                    t(
+                        "пробую формат устройства",
+                        "trying the device format"
+                    )
                 ));
                 let mix = client
                     .get_mixformat()
-                    .map_err(|e| anyhow!("не удалось получить формат устройства: {e}"))?;
+                    .map_err(|e| anyhow!("{}: {e}", t("не удалось получить формат устройства", "failed to get the device format")))?;
                 let info = parse_format(&mix)?;
                 if mix.get_samplespersec() != SAMPLE_RATE as u32 {
                     return Err(anyhow!(
-                        "устройство работает на {} Гц, нужен режим 48 кГц",
-                        mix.get_samplespersec()
+                        "{} {} {}",
+                        t("устройство работает на", "the device runs at"),
+                        mix.get_samplespersec(),
+                        t("Гц, нужен режим 48 кГц", "Hz, 48 kHz mode is required")
                     ));
                 }
                 client
@@ -280,23 +307,23 @@ fn capture_loop(
                         },
                         None,
                     )
-                    .map_err(|e| anyhow!("не удалось включить захват: {e}"))?;
+                    .map_err(|e| anyhow!("{}: {e}", t("не удалось включить захват", "failed to start capture")))?;
                 let capture = client
                     .get_audiocaptureclient()
-                    .map_err(|e| anyhow!("клиент захвата WASAPI: {e}"))?;
+                    .map_err(|e| anyhow!("{}: {e}", t("клиент захвата WASAPI", "WASAPI capture client")))?;
                 client
                     .start_stream()
-                    .map_err(|e| anyhow!("запуск захвата: {e}"))?;
+                    .map_err(|e| anyhow!("{}: {e}", t("запуск захвата", "starting capture")))?;
                 return Ok((client, capture, name, info));
             }
         }
 
         let capture = client
             .get_audiocaptureclient()
-            .map_err(|e| anyhow!("клиент захвата WASAPI: {e}"))?;
+            .map_err(|e| anyhow!("{}: {e}", t("клиент захвата WASAPI", "WASAPI capture client")))?;
         client
             .start_stream()
-            .map_err(|e| anyhow!("запуск захвата: {e}"))?;
+            .map_err(|e| anyhow!("{}: {e}", t("запуск захвата", "starting capture")))?;
         Ok((client, capture, name, info))
     })();
 
@@ -308,10 +335,11 @@ fn capture_loop(
         }
     };
 
-    log(format!("Захват звука: {name}"));
+    log(format!("{}: {name}", t("Захват звука", "Audio capture")));
     let _ = ready.send(Ok(name));
 
-    let socket = UdpSocket::bind("0.0.0.0:0").context("UDP-сокет для звука")?;
+    let socket = UdpSocket::bind("0.0.0.0:0")
+        .context(t("UDP-сокет для звука", "UDP socket for audio"))?;
     let _ = socket.set_write_timeout(Some(Duration::from_millis(500)));
 
     let block_align = format.channels * (format.bits / 8);
@@ -366,7 +394,10 @@ fn capture_loop(
                         Err(err) => {
                             if !logged_error {
                                 logged_error = true;
-                                log(format!("Ошибка чтения звука: {err}"));
+                                log(format!(
+                                    "{}: {err}",
+                                    t("Ошибка чтения звука", "Audio read error")
+                                ));
                             }
                             break;
                         }
@@ -377,7 +408,10 @@ fn capture_loop(
                 Err(err) => {
                     if !logged_error {
                         logged_error = true;
-                        log(format!("Ошибка очереди звука: {err}"));
+                        log(format!(
+                            "{}: {err}",
+                            t("Ошибка очереди звука", "Audio queue error")
+                        ));
                     }
                     break;
                 }

@@ -47,7 +47,7 @@ public class StreamService extends Service implements AudioEngine.Listener {
         engine = AudioEngine.get(this);
         engine.addListener(this);
         createChannel();
-        startForegroundInternal(buildNotification("Подготовка…"));
+        startForegroundInternal(buildNotification(getString(R.string.notif_status_preparing)));
         acquireLocks();
     }
 
@@ -82,8 +82,8 @@ public class StreamService extends Service implements AudioEngine.Listener {
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null && manager.getNotificationChannel(CHANNEL_ID) == null) {
                 NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                        "Трансляция звука", NotificationManager.IMPORTANCE_LOW);
-                channel.setDescription("Уведомление о трансляции звука с компьютера");
+                        getString(R.string.notif_channel_name), NotificationManager.IMPORTANCE_LOW);
+                channel.setDescription(getString(R.string.notif_channel_desc));
                 channel.setShowBadge(false);
                 channel.setSound(null, null);
                 manager.createNotificationChannel(channel);
@@ -173,25 +173,25 @@ public class StreamService extends Service implements AudioEngine.Listener {
     public void onState(AudioEngine.State state, String message) {
         switch (state) {
             case SEARCHING:
-                updateNotification("Поиск компьютера…");
+                updateNotification(getString(R.string.status_title_searching));
                 releaseLocks();
                 break;
             case CONNECTING:
-                updateNotification("Подключение…");
+                updateNotification(getString(R.string.status_title_connecting));
                 acquireLocks();
                 break;
             case STREAMING:
-                updateNotification("Звук идёт с ПК");
+                updateNotification(getString(R.string.status_title_streaming));
                 acquireLocks();
                 break;
             case ERROR:
                 updateNotification(message == null || message.isEmpty()
-                        ? "Ошибка" : message);
+                        ? getString(R.string.status_title_error) : message);
                 releaseLocks();
                 break;
             case IDLE:
             default:
-                updateNotification("Остановлено");
+                updateNotification(getString(R.string.notif_status_stopped));
                 releaseLocks();
                 break;
         }

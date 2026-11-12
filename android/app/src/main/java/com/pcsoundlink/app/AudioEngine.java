@@ -123,7 +123,7 @@ public final class AudioEngine {
         prefs = appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         latencyMs = clampLatency(prefs.getInt("latency_ms", 60));
         volumePct = Math.max(0, Math.min(100, prefs.getInt("volume_pct", 100)));
-        addLog("Готово к работе");
+        addLog(str(R.string.log_ready));
     }
 
     public static AudioEngine get(Context context) {
@@ -186,7 +186,7 @@ public final class AudioEngine {
                     socket.bind(new InetSocketAddress(Protocol.DISCOVERY_PORT));
                 } catch (SocketException portBusy) {
                     socket.bind(new InetSocketAddress(0));
-                    addLog("Порт поиска занят, использую резервный");
+                    addLog(str(R.string.log_discovery_port_busy));
                 }
                 socket.setSoTimeout(700);
                 try {
@@ -199,9 +199,9 @@ public final class AudioEngine {
                 thread.setDaemon(true);
                 discoveryThread = thread;
                 thread.start();
-                setState(State.SEARCHING, "Ищу компьютер в локальной сети…");
+                setState(State.SEARCHING, str(R.string.status_searching_network));
             } catch (Exception e) {
-                setState(State.ERROR, "Не удалось запустить поиск: " + shortError(e));
+                setState(State.ERROR, str(R.string.err_discovery_start, shortError(e)));
             }
         }
     }
@@ -252,7 +252,7 @@ public final class AudioEngine {
             } catch (SocketTimeoutException ignored) {
             } catch (Exception e) {
                 if (!socket.isClosed()) {
-                    addLog("Поиск: " + shortError(e));
+                    addLog(str(R.string.log_search_prefix, shortError(e)));
                 }
                 break;
             }
@@ -281,7 +281,7 @@ public final class AudioEngine {
                 }
             }
         } catch (Exception e) {
-            addLog("Не удалось отправить запрос поиска: " + shortError(e));
+            addLog(str(R.string.err_discovery_send, shortError(e)));
         }
     }
 
@@ -308,7 +308,7 @@ public final class AudioEngine {
                 servers.put(info.key(), info);
             }
             if (isNew) {
-                addLog("Найден ПК: " + name + " (" + host + ")");
+                addLog(str(R.string.log_found_pc, name, host));
             }
             publishServers(false);
         } catch (Exception ignored) {
@@ -413,7 +413,7 @@ public final class AudioEngine {
             autoConnectBlocked = false;
             stopDiscoveryForConnect();
             stopSessionInternal(false, null);
-            setState(State.CONNECTING, "Подключение к " + server.name + "…");
+            setState(State.CONNECTING, str(R.string.status_connecting_to, server.name));
             final int generation = ++connectGeneration;
             // DNS resolution and the first packet must not run on the UI thread.
             startThread("pcsound-connect", () -> establishConnection(server, generation));
@@ -425,7 +425,7 @@ public final class AudioEngine {
         try {
             address = InetAddress.getByName(server.host);
         } catch (Exception e) {
-            failConnect("Не удалось найти адрес " + server.host);
+            failConnect(str(R.string.err_host_not_found, server.host));
             return;
         }
 
@@ -436,7 +436,7 @@ public final class AudioEngine {
         } catch (Exception e) {
             closeQuietly(session.control);
             closeQuietly(session.media);
-            failConnect("Не удалось открыть сетевые порты: " + shortError(e));
+            failConnect(str(R.string.err_open_ports, shortError(e)));
             return;
         }
 
@@ -458,7 +458,7 @@ public final class AudioEngine {
         try {
             sendStart(session);
         } catch (Exception e) {
-            failSession(session, "Не удалось отправить запрос на ПК: " + shortError(e));
+            failSession(session, str(R.string.err_send_request, shortError(e)));
         }
     }
 
@@ -511,7 +511,7 @@ public final class AudioEngine {
             muteSupported = true;
             stats = new Stats();
             if (error) {
-                setState(State.ERROR, message == null ? "Ошибка" : message);
+                setState(State.ERROR, message == null ? str(R.string.status_title_error) : message);
             } else {
                 setState(State.IDLE, "");
             }
@@ -593,7 +593,7 @@ public final class AudioEngine {
                     session.muteSupported = supported;
                     setMuteState(obj.optBoolean("value", false), supported);
                 } else if ("error".equals(cmd)) {
-                    failSession(session, obj.optString("message", "Ошибка на компьютере"));
+                    failSession(session, obj.optString("message", str(R.string.err_on_computer)));
                 }
             } catch (SocketTimeoutException ignored) {
             } catch (Exception e) {
@@ -653,7 +653,7 @@ public final class AudioEngine {
                         session.frames.notifyAll();
                         if (session.running && current == session
                                 && state == State.CONNECTING) {
-                            setState(State.STREAMING, "Звук идёт с ПК");
+                            setState(State.STREAMING, str(R.string.status_title_streaming));
                         }
                     }
                 }
@@ -797,7 +797,7 @@ public final class AudioEngine {
             }
         } catch (Exception e) {
             if (session.running) {
-                failSession(session, "Ошибка аудиовыхода: " + shortError(e));
+                failSession(session, str(R.string.err_audio_output, shortError(e)));
             }
         } finally {
             if (session.track == track) {
@@ -866,24 +866,23 @@ public final class AudioEngine {
                         sendStart(session);
                     }
                     if (now - session.createdMs > CONNECT_TIMEOUT_MS) {
-                        failSession(session, "ПК не отвечает. Проверьте сервер и брандмауэр.");
+                        failSession(session, str(R.string.err_pc_no_response));
                         return;
                     }
                 } else if (session.lastPacketMs > 0
                         && now - session.lastPacketMs > STREAM_TIMEOUT_MS) {
-                    failSession(session, "Поток прерван. Проверьте Wi-Fi.");
+                    failSession(session, str(R.string.err_stream_interrupted));
                     return;
                 } else if (session.lastPacketMs == 0
                         && now - session.createdMs > CONNECT_TIMEOUT_MS) {
-                    failSession(session, "ПК подключён, но звук не приходит. "
-                            + "Проверьте аудиоустройство на компьютере.");
+                    failSession(session, str(R.string.err_no_audio));
                     return;
                 }
                 JSONObject ping = Protocol.control("ping").put("t", now);
                 sendControl(session, ping);
             } catch (Exception e) {
                 if (session.running) {
-                    failSession(session, "Соединение с ПК потеряно: " + shortError(e));
+                    failSession(session, str(R.string.err_connection_lost, shortError(e)));
                 }
                 return;
             }
@@ -978,7 +977,7 @@ public final class AudioEngine {
             try {
                 sendControl(session, Protocol.control("mute").put("value", target));
             } catch (Exception e) {
-                addLog("Не удалось переключить звук ПК: " + shortError(e));
+                addLog(str(R.string.err_mute_toggle, shortError(e)));
             }
         });
     }
@@ -988,7 +987,7 @@ public final class AudioEngine {
         muted = value;
         muteSupported = supported;
         if (changed) {
-            addLog(value ? "Динамики ПК заглушены" : "Звук на ПК включён");
+            addLog(str(value ? R.string.log_muted_pc : R.string.log_unmuted_pc));
             notifyMute();
         }
     }
@@ -1052,6 +1051,14 @@ public final class AudioEngine {
             }
             return sb.toString();
         }
+    }
+
+    private String str(int res) {
+        return appContext.getString(res);
+    }
+
+    private String str(int res, Object... args) {
+        return appContext.getString(res, args);
     }
 
     private void addLog(String message) {

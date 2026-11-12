@@ -5,10 +5,13 @@ use anyhow::Result;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::i18n::LangChoice;
+
 #[derive(Debug, Clone)]
 pub struct Config {
     pub name: String,
     pub device_name: Option<String>,
+    pub language: LangChoice,
 }
 
 impl Default for Config {
@@ -19,6 +22,7 @@ impl Default for Config {
                 .and_then(|s| s.to_str().map(str::to_string))
                 .unwrap_or_else(|| "PC".to_string()),
             device_name: None,
+            language: LangChoice::System,
         }
     }
 }
@@ -46,6 +50,7 @@ impl Config {
                 "device" if !value.trim().is_empty() => {
                     cfg.device_name = Some(value.trim().to_string())
                 }
+                "language" => cfg.language = LangChoice::from_code(value),
                 _ => {}
             }
         }
@@ -63,6 +68,7 @@ impl Config {
         if let Some(device) = &self.device_name {
             text.push_str(&format!("device={device}\n"));
         }
+        text.push_str(&format!("language={}\n", self.language.code()));
         fs::write(path, text)?;
         Ok(())
     }

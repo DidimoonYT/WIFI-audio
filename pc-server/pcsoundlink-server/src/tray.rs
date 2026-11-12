@@ -56,7 +56,10 @@ fn window_visible(hwnd: isize) -> bool {
 
 pub struct Tray {
     icon: TrayIcon,
+    show_item: MenuItem,
+    hide_item: MenuItem,
     toggle_item: MenuItem,
+    quit_item: MenuItem,
     tx: mpsc::Sender<TrayAction>,
     rx: mpsc::Receiver<TrayAction>,
     running: bool,
@@ -70,11 +73,15 @@ impl Tray {
         let (tx, rx) = mpsc::channel();
 
         let menu = Menu::new();
-        let show_item = MenuItem::new("Показать окно", true, None);
-        let hide_item = MenuItem::new("Скрыть в трей", true, None);
-        let toggle_item = MenuItem::new("Запустить сервер", true, None);
+        let show_item = MenuItem::new(crate::i18n::t("Показать окно", "Show window"), true, None);
+        let hide_item = MenuItem::new(crate::i18n::t("Скрыть в трей", "Hide to tray"), true, None);
+        let toggle_item = MenuItem::new(
+            crate::i18n::t("Запустить сервер", "Start server"),
+            true,
+            None,
+        );
         let separator = PredefinedMenuItem::separator();
-        let quit_item = MenuItem::new("Выход", true, None);
+        let quit_item = MenuItem::new(crate::i18n::t("Выход", "Quit"), true, None);
 
         menu.append(&show_item)?;
         menu.append(&hide_item)?;
@@ -84,7 +91,7 @@ impl Tray {
 
         let icon = TrayIconBuilder::new()
             .with_menu(Box::new(menu))
-            .with_tooltip("PC Sound Link — сервер остановлен")
+            .with_tooltip(tooltip(false))
             .with_icon(crate::icons::tray_icon()?)
             .build()?;
 
@@ -128,7 +135,10 @@ impl Tray {
 
         Ok(Self {
             icon,
+            show_item,
+            hide_item,
             toggle_item,
+            quit_item,
             tx,
             rx,
             running: false,
@@ -144,22 +154,41 @@ impl Tray {
             return;
         }
         self.running = running;
-        let _ = self.toggle_item.set_text(if running {
-            "Остановить сервер"
+        self.apply_language();
+    }
+
+    /// Обновляет подписи меню после смены языка интерфейса.
+    pub fn apply_language(&self) {
+        use crate::i18n::t;
+        let _ = self.show_item.set_text(t("Показать окно", "Show window"));
+        let _ = self.hide_item.set_text(t("Скрыть в трей", "Hide to tray"));
+        let _ = self.toggle_item.set_text(if self.running {
+            t("Остановить сервер", "Stop server")
         } else {
-            "Запустить сервер"
+            t("Запустить сервер", "Start server")
         });
-        let tooltip = if running {
-            "PC Sound Link — сервер запущен"
-        } else {
-            "PC Sound Link — сервер остановлен"
-        };
-        let _ = self.icon.set_tooltip(Some(tooltip));
+        let _ = self.quit_item.set_text(t("Выход", "Quit"));
+        let _ = self.icon.set_tooltip(Some(tooltip(self.running)));
     }
 
     /// Канал используется только для отладки/тестов, но держим его живым.
     #[allow(dead_code)]
     pub fn sender(&self) -> mpsc::Sender<TrayAction> {
         self.tx.clone()
+    }
+}
+
+fn tooltip(running: bool) -> &'static str {
+    use crate::i18n::t;
+    if running {
+        t(
+            "WIFI audio — сервер запущен",
+            "WIFI audio — server running",
+        )
+    } else {
+        t(
+            "WIFI audio — сервер остановлен",
+            "WIFI audio — server stopped",
+        )
     }
 }

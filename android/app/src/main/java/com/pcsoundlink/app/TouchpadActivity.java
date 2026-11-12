@@ -111,7 +111,7 @@ public class TouchpadActivity extends AppCompatActivity implements TouchpadClien
         });
         btnKeyboard.setOnClickListener(v -> openKeyboard());
 
-        client = new TouchpadClient(host);
+        client = new TouchpadClient(getApplicationContext(), host);
         client.setListener(this);
         client.start();
 

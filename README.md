@@ -1,4 +1,4 @@
-# PC Sound Link 🔊📱
+# WIFI audio 🔊📱
 
 **Передача звука с компьютера на телефон по локальной сети и Wi‑Fi.**
 Телефон превращается в беспроводные динамики для ПК: музыка, фильмы, игры и
@@ -10,19 +10,19 @@
 Android по LAN**.
 
 ```
-┌──────────────┐   UDP 47832/47833   ┌────────────────┐
-│  Windows ПК  │ ──────────────────► │  Android phone │
-│ Rust server  │   PCM 48 кГц стерео │  PC Sound Link │
-└──────────────┘                     └────────────────┘
+┌──────────────┐   UDP 47832/47833   ┌─────────────────┐
+│  Windows ПК  │ ──────────────────► │  Android phone  │
+│ Rust server  │   PCM 48 кГц стерео │  WIFI audio     │
+└──────────────┘                     └─────────────────┘
 ```
 
-![Сервер PC Sound Link на Windows](docs/screenshots/windows-server.png)
+![Сервер WIFI audio на Windows](docs/screenshots/windows-server.png)
 
 ---
 
 ## Что это простыми словами
 
-PC Sound Link — это **беспроводная акустическая система из вашего телефона**.
+WIFI audio — это **беспроводная акустическая система из вашего телефона**.
 Вы запускаете маленький сервер на Windows, открываете приложение на Android —
 и весь звук с компьютера начинает играть в телефоне или в колонке, к которой
 телефон подключён.
@@ -289,7 +289,7 @@ APK появится в `android\app\build\outputs\apk\debug\app-debug.apk`.
 
 ## English summary
 
-**PC Sound Link** streams system audio from a Windows PC to an Android phone over
+**WIFI audio** streams system audio from a Windows PC to an Android phone over
 a local Wi‑Fi/LAN network. It turns the phone into wireless speakers for the
 computer with low latency — no Bluetooth codec, no internet connection, no
 installation. It can also mirror the PC screen to the phone and act as a remote

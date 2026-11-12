@@ -20,6 +20,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 };
 
 use crate::applog::log;
+use crate::i18n::t;
 use crate::protocol::{SCREEN_FPS, SCREEN_JPEG_QUALITY, SCREEN_MAX_WIDTH};
 
 pub struct ScreenSession {
@@ -85,9 +86,14 @@ fn stream_loop(
                 }
                 Err(err) => {
                     if Instant::now() > deadline {
-                        let _ = ready.send(Err(format!(
-                            "телефон не принял TCP-соединение: {err}"
-                        )));
+                        let text = format!(
+                            "{}: {err}",
+                            t(
+                                "телефон не принял TCP-соединение",
+                                "the phone did not accept the TCP connection"
+                            )
+                        );
+                        let _ = ready.send(Err(text));
                         return;
                     }
                     thread::sleep(Duration::from_millis(1500));
@@ -97,7 +103,13 @@ fn stream_loop(
         let Some(mut stream) = stream else {
             return;
         };
-        log(format!("Демонстрация экрана: подключение к {client_ip}:{port}"));
+        log(format!(
+            "{} {client_ip}:{port}",
+            t(
+                "Демонстрация экрана: подключение к",
+                "Screen streaming: connecting to"
+            )
+        ));
 
         let frame_time = Duration::from_millis(1000 / SCREEN_FPS);
         while !stop.load(Ordering::SeqCst) {
@@ -108,8 +120,11 @@ fn stream_loop(
                         first_frame = false;
                         let _ = ready.send(Ok((width, height)));
                         log(format!(
-                            "Демонстрация экрана: {width}x{height}, кадр {} КБ",
-                            jpeg.len() / 1024
+                            "{}: {width}x{height}, {} {} {}",
+                            t("Демонстрация экрана", "Screen streaming"),
+                            t("кадр", "frame"),
+                            jpeg.len() / 1024,
+                            t("КБ", "KB")
                         ));
                     }
                     let mut packet = Vec::with_capacity(4 + jpeg.len());
@@ -120,7 +135,13 @@ fn stream_loop(
                     }
                 }
                 Err(err) => {
-                    log(format!("Демонстрация экрана недоступна: {err}"));
+                    log(format!(
+                        "{}: {err}",
+                        t(
+                            "Демонстрация экрана недоступна",
+                            "Screen streaming unavailable"
+                        )
+                    ));
                     if first_frame {
                         let _ = ready.send(Err(err.to_string()));
                         return;
@@ -136,7 +157,10 @@ fn stream_loop(
         if stop.load(Ordering::SeqCst) {
             return;
         }
-        log("Демонстрация экрана: соединение потеряно, переподключаюсь…");
+        log(t(
+            "Демонстрация экрана: соединение потеряно, переподключаюсь…",
+            "Screen streaming: connection lost, reconnecting…",
+        ));
         thread::sleep(Duration::from_millis(500));
     }
 }
@@ -147,7 +171,10 @@ fn capture_jpeg() -> Result<(Vec<u8>, u32, u32)> {
 
     let screen_dc = unsafe { GetDC(None) };
     if screen_dc.is_invalid() {
-        return Err(anyhow!("не удалось получить контекст экрана"));
+        return Err(anyhow!(t(
+            "не удалось получить контекст экрана",
+            "failed to get the screen context"
+        )));
     }
     let src_dc = unsafe { CreateCompatibleDC(Some(screen_dc)) };
     let dst_dc = unsafe { CreateCompatibleDC(Some(screen_dc)) };
@@ -245,7 +272,7 @@ fn capture_jpeg() -> Result<(Vec<u8>, u32, u32)> {
         }
 
         let image = image::RgbImage::from_raw(out_w, out_h, rgb)
-            .ok_or_else(|| anyhow!("не удалось собрать кадр"))?;
+            .ok_or_else(|| anyhow!(t("не удалось собрать кадр", "failed to build the frame")))?;
         let mut jpeg = Vec::new();
         let mut encoder =
             image::codecs::jpeg::JpegEncoder::new_with_quality(&mut jpeg, SCREEN_JPEG_QUALITY);

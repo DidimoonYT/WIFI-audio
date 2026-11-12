@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WIFI audio</string>
+    <string name="tagline">Звук с компьютера по Wi-Fi</string>
+
+    <string name="status_title_idle">Не подключено</string>
+    <string name="status_title_searching">Поиск компьютера…</string>
+    <string name="status_title_connecting">Подключение…</string>
+    <string name="status_title_streaming">Звук идёт с ПК</string>
+    <string name="status_title_error">Ошибка</string>
+
+    <string name="status_detail_idle">Включите сервер на компьютере и нажмите «Подключиться».</string>
+    <string name="status_detail_searching">Убедитесь, что ПК и телефон в одной сети Wi-Fi.</string>
+    <string name="status_detail_connecting">Устанавливаю соединение…</string>
+    <string name="status_detail_streaming">Подключено к %1$s</string>
+    <string name="status_detail_error">Что-то пошло не так.</string>
+
+    <string name="servers_title">Компьютер</string>
+    <string name="servers_hint">Найденные компьютеры в вашей сети:</string>
+    <string name="servers_empty">Компьютеры не найдены</string>
+    <string name="btn_search">Искать</string>
+    <string name="btn_connect">Подключиться</string>
+    <string name="btn_disconnect">Отключиться</string>
+    <string name="btn_touchpad">Тачпад и демо экрана</string>
+    <string name="manual_ip_hint">IP компьютера вручную (если поиск не работает)</string>
+    <string name="manual_ip_label">Или укажите адрес вручную</string>
+    <string name="auto_connect">Подключаться автоматически</string>
+    <string name="auto_connect_desc">Телефон сам найдёт ПК и начнёт воспроизведение</string>
+    <string name="server_name_prefix">ПК %1$s</string>
+
+    <string name="language_title">Язык</string>
+    <string name="language_system">Системный</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+
+    <string name="sound_title">Звук</string>
+    <string name="mute_pc">Заглушить динамики ПК</string>
+    <string name="mute_pc_desc">Звук останется только в телефоне</string>
+    <string name="volume_title">Громкость в телефоне</string>
+    <string name="volume_value">%1$d %%</string>
+    <string name="latency_title">Буфер / задержка</string>
+    <string name="latency_value">%1$d мс</string>
+    <string name="latency_hint">Меньше — ниже задержка. Если звук прерывается, увеличьте значение.</string>
+    <string name="unit_ms">%1$d мс</string>
+
+    <string name="log_title">Журнал</string>
+    <string name="log_empty">—</string>
+    <string name="stats_waiting">Ожидание данных…</string>
+    <string name="stats_format">Буфер: %1$d мс · Сеть: %2$s · Потери: %3$d</string>
+    <string name="stats_offline">—</string>
+
+    <string name="network_warning_title">Проверьте сеть</string>
+    <string name="network_warning_vpn">Включён VPN. Он может мешать: телефон не найдёт компьютер, а звук будет прерываться. Если подключение не работает — отключите VPN.</string>
+    <string name="network_warning_mobile">Телефон подключён к мобильной сети, а не к Wi-Fi. Подключите телефон к той же сети Wi-Fi, что и компьютер.</string>
+    <string name="toast_vpn_warning">Включён VPN — он может мешать подключению к компьютеру.</string>
+    <string name="toast_no_server">Компьютер не выбран. Нажмите «Искать» или введите IP.</string>
+    <string name="toast_bad_ip">Некорректный IP-адрес</string>
+    <string name="toast_need_notifications">Разрешите уведомления, чтобы трансляция работала в фоне.</string>
+
+    <string name="touchpad_title">Тачпад и экран ПК</string>
+    <string name="touchpad_status_starting">Подключение к ПК…</string>
+    <string name="touchpad_status_streaming">Экран идёт с ПК</string>
+    <string name="touchpad_status_reconnecting">Переподключение к ПК…</string>
+    <string name="touchpad_status_lost">Соединение с экраном потеряно</string>
+    <string name="touchpad_error">Ошибка тачпада: %1$s</string>
+    <string name="touchpad_close">Назад</string>
+    <string name="touchpad_hide_preview">Скрыть экран</string>
+    <string name="touchpad_show_preview">Показать экран</string>
+    <string name="touchpad_keyboard">Клавиатура</string>
+    <string name="touchpad_drag_on">ЛКМ зажата — тяните окно</string>
+    <string name="touchpad_drag_off">ЛКМ отпущена</string>
+    <string name="touchpad_screen_desc">Экран компьютера</string>
+    <string name="touchpad_hint">Тачпад: проводите пальцем по всему экрану. Тап — клик, долгое нажатие — перетаскивание, 2 пальца — прокрутка, щипок — масштаб (столбик), щипок по горизонтали — масштаб (строка).</string>
+    <string name="touchpad_error_no_host">Сначала подключитесь к ПК или выберите его в списке</string>
+
+    <string name="notif_channel_name">Трансляция звука</string>
+    <string name="notif_channel_desc">Уведомление о трансляции звука с компьютера</string>
+    <string name="notif_status_preparing">Подготовка…</string>
+    <string name="notif_status_stopped">Остановлено</string>
+
+    <string name="log_ready">Готово к работе</string>
+    <string name="log_discovery_port_busy">Порт поиска занят, использую резервный</string>
+    <string name="status_searching_network">Ищу компьютер в локальной сети…</string>
+    <string name="err_discovery_start">Не удалось запустить поиск: %1$s</string>
+    <string name="log_search_prefix">Поиск: %1$s</string>
+    <string name="err_discovery_send">Не удалось отправить запрос поиска: %1$s</string>
+    <string name="log_found_pc">Найден ПК: %1$s (%2$s)</string>
+    <string name="status_connecting_to">Подключение к %1$s…</string>
+    <string name="err_host_not_found">Не удалось найти адрес %1$s</string>
+    <string name="err_open_ports">Не удалось открыть сетевые порты: %1$s</string>
+    <string name="err_send_request">Не удалось отправить запрос на ПК: %1$s</string>
+    <string name="err_on_computer">Ошибка на компьютере</string>
+    <string name="err_audio_output">Ошибка аудиовыхода: %1$s</string>
+    <string name="err_pc_no_response">ПК не отвечает. Проверьте сервер и брандмауэр.</string>
+    <string name="err_stream_interrupted">Поток прерван. Проверьте Wi-Fi.</string>
+    <string name="err_no_audio">ПК подключён, но звук не приходит. Проверьте аудиоустройство на компьютере.</string>
+    <string name="err_connection_lost">Соединение с ПК потеряно: %1$s</string>
+    <string name="err_mute_toggle">Не удалось переключить звук ПК: %1$s</string>
+    <string name="log_muted_pc">Динамики ПК заглушены</string>
+    <string name="log_unmuted_pc">Звук на ПК включён</string>
+</resources>

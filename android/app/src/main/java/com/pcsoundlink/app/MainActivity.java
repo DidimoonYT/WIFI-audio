@@ -25,7 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
+import androidx.core.os.LocaleListCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
@@ -88,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
         bindViews();
         setupServers();
         setupControls();
+        setupLanguage();
         setupNetworkWarning();
         requestNotificationPermission();
 
@@ -195,6 +198,45 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
                 int value = 20 + progress * 10;
                 engine.setLatency(value);
                 textLatency.setText(getString(R.string.latency_value, value));
+            }
+        });
+    }
+
+    private void setupLanguage() {
+        Spinner spinner = findViewById(R.id.spinnerLanguage);
+        String[] labels = {
+                getString(R.string.language_system),
+                getString(R.string.language_russian),
+                getString(R.string.language_english)
+        };
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+
+        final String current = AppCompatDelegate.getApplicationLocales().toLanguageTags();
+        int index = 0;
+        if (current.startsWith("ru")) {
+            index = 1;
+        } else if (current.startsWith("en")) {
+            index = 2;
+        }
+        spinner.setSelection(index);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String tag = position == 1 ? "ru" : position == 2 ? "en" : "";
+                if (tag.equals(current)) {
+                    return;
+                }
+                AppCompatDelegate.setApplicationLocales(tag.isEmpty()
+                        ? LocaleListCompat.getEmptyLocaleList()
+                        : LocaleListCompat.forLanguageTags(tag));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
     }
@@ -346,8 +388,8 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
                 Toast.makeText(this, R.string.toast_bad_ip, Toast.LENGTH_SHORT).show();
                 return;
             }
-            target = new ServerInfo("manual:" + host, "ПК " + host, host,
-                    Protocol.CONTROL_PORT, SystemClock.elapsedRealtime());
+            target = new ServerInfo("manual:" + host, getString(R.string.server_name_prefix, host),
+                    host, Protocol.CONTROL_PORT, SystemClock.elapsedRealtime());
         } else if (selectedIndex >= 0 && selectedIndex < servers.size()) {
             target = servers.get(selectedIndex);
         }
@@ -539,7 +581,8 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
             textStats.setText(R.string.stats_offline);
             return;
         }
-        String rtt = stats.rttMs >= 0 ? stats.rttMs + " мс" : "—";
+        String rtt = stats.rttMs >= 0 ? getString(R.string.unit_ms, stats.rttMs)
+                : getString(R.string.stats_offline);
         textStats.setText(getString(R.string.stats_format, stats.bufferMs, rtt,
                 stats.lostFrames));
     }

@@ -27,7 +27,7 @@
         android:translateY="18">
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M32,14h32a8,8 0 0 1 8,8v52a8,8 0 0 1 -8,8H32a8,8 0 0 1 -8,-8V22a8,8 0 0 1 8,-8z" />
+            android:pathData="M40,14h16a8,8 0 0 1 8,8v52a8,8 0 0 1 -8,8H40a8,8 0 0 1 -8,-8V22a8,8 0 0 1 8,-8z" />
         <path
             android:pathData="M44,20h8"
             android:strokeColor="#C7D2FE"

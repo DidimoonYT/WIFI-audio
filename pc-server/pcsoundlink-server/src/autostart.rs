@@ -38,10 +38,15 @@ pub fn set_autostart(enabled: bool) -> Result<()> {
         let exe = env::current_exe()?;
         let exe_str = exe.to_string_lossy().to_string();
         run_key.set_value(APP_NAME, &autostart_command(&exe_str))?;
-        crate::applog::log(format!("Автозапуск включён: {exe_str} --autostart --minimized"));
+        crate::applog::log(format!(
+            "{}: {exe_str} --autostart --minimized",
+            crate::i18n::t("Автозапуск включён", "Autostart enabled")
+        ));
     } else {
         let _ = run_key.delete_value(APP_NAME);
-        crate::applog::log("Автозапуск отключён".to_string());
+        crate::applog::log(
+            crate::i18n::t("Автозапуск отключён", "Autostart disabled").to_string(),
+        );
     }
     Ok(())
 }

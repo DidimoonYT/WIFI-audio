@@ -23,6 +23,7 @@ use windows::Win32::UI::Shell::ShellExecuteW;
 use windows::Win32::UI::WindowsAndMessaging::SW_HIDE;
 
 use crate::applog::log;
+use crate::i18n::t;
 use crate::protocol::{CONTROL_PORT, DISCOVERY_PORT};
 
 const PROGRAM_RULE: &str = "PC Sound Link (программа)";
@@ -155,30 +156,39 @@ fn ensure() -> Status {
 
     // Если приложение уже запущено от администратора — просто добавим правила.
     if install_rules().is_ok() {
-        log("Брандмауэр: порты открыты");
+        log(t("Брандмауэр: порты открыты", "Firewall: ports are open"));
         return Status::Ok;
     }
 
-    log("Брандмауэр: открываю порты, подтвердите запрос Windows…");
+    log(t(
+        "Брандмауэр: открываю порты, подтвердите запрос Windows…",
+        "Firewall: opening ports, please confirm the Windows prompt…",
+    ));
     match request_elevation() {
         Elevation::Started => {
             let deadline = Instant::now() + Duration::from_secs(30);
             while Instant::now() < deadline {
                 if rules_installed() {
-                    log("Брандмауэр: порты открыты");
+                    log(t("Брандмауэр: порты открыты", "Firewall: ports are open"));
                     return Status::Ok;
                 }
                 thread::sleep(Duration::from_millis(400));
             }
-            log("Брандмауэр: не удалось открыть порты автоматически");
+            log(t(
+                "Брандмауэр: не удалось открыть порты автоматически",
+                "Firewall: could not open the ports automatically",
+            ));
             Status::Failed
         }
         Elevation::Cancelled => {
-            log("Брандмауэр: открытие портов отменено. Телефон может не подключиться.");
+            log(t(
+                "Брандмауэр: открытие портов отменено. Телефон может не подключиться.",
+                "Firewall: opening ports was cancelled. The phone may not connect.",
+            ));
             Status::Declined
         }
         Elevation::Error(err) => {
-            log(format!("Брандмауэр: {err}"));
+            log(format!("{}: {err}", t("Брандмауэр", "Firewall")));
             Status::Failed
         }
     }
@@ -192,7 +202,13 @@ enum Elevation {
 
 fn request_elevation() -> Elevation {
     let Ok(exe) = std::env::current_exe() else {
-        return Elevation::Error("не удалось определить путь к программе".to_string());
+        return Elevation::Error(
+            t(
+                "не удалось определить путь к программе",
+                "failed to determine the program path",
+            )
+            .to_string(),
+        );
     };
     let file = windows::core::HSTRING::from(exe.as_os_str());
     let verb = windows::core::HSTRING::from("runas");
@@ -216,7 +232,10 @@ fn request_elevation() -> Elevation {
     } else if code == 5 {
         Elevation::Cancelled
     } else {
-        Elevation::Error(format!("код ошибки запуска {code}"))
+        Elevation::Error(format!(
+            "{} {code}",
+            t("код ошибки запуска", "launch error code")
+        ))
     }
 }
 

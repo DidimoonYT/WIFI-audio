@@ -8,6 +8,7 @@ use crate::audio::list_output_devices;
 use crate::autostart;
 use crate::config::Config;
 use crate::firewall;
+use crate::i18n::{self, LangChoice};
 use crate::netinfo::{self, NetReport};
 use crate::server::{start, ServerHandle};
 use crate::tray::{Tray, TrayAction};
@@ -43,6 +44,7 @@ pub struct App {
     start_now: bool,
     start_now_done: bool,
     autostart_enabled: bool,
+    language: LangChoice,
     quitting: bool,
     ip: String,
     net: NetReport,
@@ -67,6 +69,7 @@ impl App {
 
         let config = Config::load();
         let name = config.name.clone();
+        let language = config.language;
         let devices = list_output_devices();
         let device_index = config
             .device_name
@@ -85,7 +88,7 @@ impl App {
             .map(|ip| ip.to_string())
             .unwrap_or_else(|| "—".to_string());
         for warning in &net.warnings {
-            applog::log(format!("Сеть: {warning}"));
+            applog::log(format!("{}: {warning}", i18n::t("Сеть", "Network")));
         }
         firewall::ensure_async();
 
@@ -107,7 +110,13 @@ impl App {
         }
         let tray = Tray::new(cc.egui_ctx.clone(), hwnd).ok();
         if tray.is_none() {
-            applog::log("Не удалось создать значок в системном трее".to_string());
+            applog::log(
+                i18n::t(
+                    "Не удалось создать значок в системном трее",
+                    "Failed to create the system tray icon",
+                )
+                .to_string(),
+            );
         }
 
         // Load autostart setting
@@ -119,7 +128,7 @@ impl App {
             devices,
             device_index,
             handle: None,
-            status: "Сервер остановлен".to_string(),
+            status: i18n::t("Сервер остановлен", "Server stopped").to_string(),
             detail: String::new(),
             starting: false,
             log_pos: 0,
@@ -127,6 +136,7 @@ impl App {
             start_now,
             start_now_done: false,
             autostart_enabled,
+            language,
             quitting: false,
             ip,
             net,
@@ -164,7 +174,7 @@ impl App {
             return;
         }
         self.starting = true;
-        self.status = "Запуск сервера…".to_string();
+        self.status = i18n::t("Запуск сервера…", "Starting server…").to_string();
         self.detail.clear();
 
         let name = self.name.trim();
@@ -184,22 +194,30 @@ impl App {
         self.config = Config {
             name: name.clone(),
             device_name: device,
+            language: self.language,
         };
         let _ = self.config.save();
 
         match start(self.config.clone()) {
             Ok(handle) => {
                 self.handle = Some(handle);
-                self.status = "Сервер запущен".to_string();
-                self.detail = "Телефон найдёт компьютер автоматически в приложении.".to_string();
+                self.status = i18n::t("Сервер запущен", "Server running").to_string();
+                self.detail = i18n::t(
+                    "Телефон найдёт компьютер автоматически в приложении.",
+                    "The phone will find this computer automatically in the app.",
+                )
+                .to_string();
                 if let Some(t) = self.tray.as_mut() {
                     t.set_server_running(true);
                 }
             }
             Err(err) => {
-                self.status = format!("Ошибка: {err}");
+                self.status = format!("{}: {err}", i18n::t("Ошибка", "Error"));
                 self.detail.clear();
-                applog::log(format!("Не удалось запустить сервер: {err}"));
+                applog::log(format!(
+                    "{}: {err}",
+                    i18n::t("Не удалось запустить сервер", "Failed to start the server")
+                ));
             }
         }
         self.starting = false;
@@ -208,14 +226,39 @@ impl App {
 
     fn stop_server(&mut self) {
         if let Some(mut handle) = self.handle.take() {
-            self.status = "Остановка…".to_string();
+            self.status = i18n::t("Остановка…", "Stopping…").to_string();
             handle.stop();
-            self.status = "Сервер остановлен".to_string();
+            self.status = i18n::t("Сервер остановлен", "Server stopped").to_string();
             self.detail.clear();
             if let Some(t) = self.tray.as_mut() {
                 t.set_server_running(false);
             }
         }
+    }
+
+    /// Применяет выбранный язык ко всем подписям и сохраняет настройку.
+    fn apply_language(&mut self, ctx: &egui::Context) {
+        self.config.language = self.language;
+        let _ = self.config.save();
+        i18n::init(self.language.resolve());
+        if let Some(tray) = &self.tray {
+            tray.apply_language();
+        }
+        self.status = if self.handle.is_some() {
+            i18n::t("Сервер запущен", "Server running").to_string()
+        } else if self.starting {
+            i18n::t("Запуск сервера…", "Starting server…").to_string()
+        } else {
+            i18n::t("Сервер остановлен", "Server stopped").to_string()
+        };
+        if self.handle.is_some() {
+            self.detail = i18n::t(
+                "Телефон найдёт компьютер автоматически в приложении.",
+                "The phone will find this computer automatically in the app.",
+            )
+            .to_string();
+        }
+        ctx.send_viewport_cmd(ViewportCommand::Title(i18n::window_title().to_string()));
     }
 }
 
@@ -237,7 +280,13 @@ impl eframe::App for App {
             } else {
                 ctx.send_viewport_cmd(ViewportCommand::CancelClose);
                 crate::tray::hide_window(self.hwnd);
-                applog::log("Окно свёрнуто в трей, сервер продолжает работу".to_string());
+                applog::log(
+                    i18n::t(
+                        "Окно свёрнуто в трей, сервер продолжает работу",
+                        "Window minimized to tray, the server keeps running",
+                    )
+                    .to_string(),
+                );
             }
         }
 
@@ -285,11 +334,19 @@ impl eframe::App for App {
                 ui.style_mut().visuals.override_text_color = Some(TEXT);
                 ui.style_mut().spacing.item_spacing = egui::vec2(8.0, 7.0);
 
-                ui.label(RichText::new("PC Sound Link").size(26.0).strong().color(TEXT));
                 ui.label(
-                    RichText::new("Звук с компьютера на телефон по Wi-Fi")
-                        .size(14.0)
-                        .color(MUTED),
+                    RichText::new("WIFI audio")
+                        .size(26.0)
+                        .strong()
+                        .color(TEXT),
+                );
+                ui.label(
+                    RichText::new(i18n::t(
+                        "Звук с компьютера на телефон по Wi-Fi",
+                        "PC audio to your phone over Wi-Fi",
+                    ))
+                    .size(14.0)
+                    .color(MUTED),
                 );
                 ui.add_space(12.0);
 
@@ -299,7 +356,7 @@ impl eframe::App for App {
                             ("●", OK)
                         } else if self.starting {
                             ("●", BUSY)
-                        } else if self.status.starts_with("Ошибка") {
+                        } else if self.status.starts_with(i18n::t("Ошибка", "Error")) {
                             ("●", ERR)
                         } else {
                             ("●", DIM)
@@ -315,9 +372,9 @@ impl eframe::App for App {
                             egui::Layout::right_to_left(egui::Align::Center),
                             |ui| {
                                 let text = if self.handle.is_some() {
-                                    "Остановить сервер"
+                                    i18n::t("Остановить сервер", "Stop server")
                                 } else {
-                                    "Запустить сервер"
+                                    i18n::t("Запустить сервер", "Start server")
                                 };
                                 let enabled = !self.starting;
                                 let button =
@@ -353,10 +410,13 @@ impl eframe::App for App {
                         .show(ui, |ui| {
                             ui.set_min_width(ui.available_width());
                             ui.label(
-                                RichText::new("⚠  Проверьте сеть")
-                                    .size(15.0)
-                                    .strong()
-                                    .color(WARN_TEXT),
+                                RichText::new(i18n::t(
+                                    "⚠  Проверьте сеть",
+                                    "⚠  Check your network",
+                                ))
+                                .size(15.0)
+                                .strong()
+                                .color(WARN_TEXT),
                             );
                             for warning in &self.net.warnings {
                                 ui.add_space(2.0);
@@ -373,12 +433,17 @@ impl eframe::App for App {
                             .net
                             .primary_name
                             .as_deref()
-                            .unwrap_or("IP этого компьютера");
+                            .unwrap_or(i18n::t(
+                                "IP этого компьютера",
+                                "This computer's IP",
+                            ));
                         ui.label(RichText::new(adapter).size(12.0).color(MUTED));
                         ui.with_layout(
                             egui::Layout::right_to_left(egui::Align::Center),
                             |ui| {
-                                if outlined_button(ui, "Скопировать IP").clicked() {
+                                if outlined_button(ui, i18n::t("Скопировать IP", "Copy IP"))
+                                    .clicked()
+                                {
                                     ctx.copy_text(self.ip.clone());
                                 }
                             },
@@ -388,28 +453,49 @@ impl eframe::App for App {
                     ui.add_space(3.0);
                     ui.horizontal(|ui| {
                         let (text, color) = match firewall::status() {
-                            firewall::Status::Ok => ("Брандмауэр: порты открыты", OK),
-                            firewall::Status::Checking => {
-                                ("Брандмауэр: проверяю доступ…", MUTED)
-                            }
+                            firewall::Status::Ok => (
+                                i18n::t(
+                                    "Брандмауэр: порты открыты",
+                                    "Firewall: ports are open",
+                                ),
+                                OK,
+                            ),
+                            firewall::Status::Checking => (
+                                i18n::t(
+                                    "Брандмауэр: проверяю доступ…",
+                                    "Firewall: checking access…",
+                                ),
+                                MUTED,
+                            ),
                             firewall::Status::Declined => (
-                                "Брандмауэр: доступ не разрешён — телефон может не подключиться.",
+                                i18n::t(
+                                    "Брандмауэр: доступ не разрешён — телефон может не подключиться.",
+                                    "Firewall: access denied — the phone may not connect.",
+                                ),
                                 ERR,
                             ),
                             firewall::Status::Failed => (
-                                "Брандмауэр: не удалось открыть порты автоматически.",
+                                i18n::t(
+                                    "Брандмауэр: не удалось открыть порты автоматически.",
+                                    "Firewall: could not open the ports automatically.",
+                                ),
                                 ERR,
                             ),
-                            firewall::Status::Unknown => {
-                                ("Брандмауэр: порты 47832 / 47833", MUTED)
-                            }
+                            firewall::Status::Unknown => (
+                                i18n::t(
+                                    "Брандмауэр: порты 47832 / 47833",
+                                    "Firewall: ports 47832 / 47833",
+                                ),
+                                MUTED,
+                            ),
                         };
                         ui.label(RichText::new(text).size(11.0).color(color));
                         if matches!(
                             firewall::status(),
                             firewall::Status::Declined | firewall::Status::Failed
                         ) {
-                            if outlined_button(ui, "Открыть порты").clicked() {
+                            if outlined_button(ui, i18n::t("Открыть порты", "Open ports")).clicked()
+                            {
                                 firewall::ensure_async();
                             }
                         }
@@ -417,11 +503,14 @@ impl eframe::App for App {
                 });
 
                 ui.add_space(4.0);
-                section_card(ui, "Настройки", |ui| {
+                section_card(ui, i18n::t("Настройки", "Settings"), |ui| {
                     let enabled = self.handle.is_none() && !self.starting;
                     ui.add_enabled_ui(enabled, |ui| {
                         ui.horizontal(|ui| {
-                            ui.add_sized([130.0, 22.0], egui::Label::new("Имя компьютера"));
+                            ui.add_sized(
+                                [130.0, 22.0],
+                                egui::Label::new(i18n::t("Имя компьютера", "Computer name")),
+                            );
                             ui.add_sized(
                                 [290.0, 26.0],
                                 egui::TextEdit::singleline(&mut self.name),
@@ -429,22 +518,28 @@ impl eframe::App for App {
                         });
                         ui.add_space(4.0);
                         ui.horizontal(|ui| {
-                            ui.add_sized([130.0, 22.0], egui::Label::new("Устройство вывода"));
+                            ui.add_sized(
+                                [130.0, 22.0],
+                                egui::Label::new(i18n::t("Устройство вывода", "Output device")),
+                            );
                             egui::ComboBox::from_id_salt("device")
                                 .selected_text(if self.device_index == 0 {
-                                    "Системное (по умолчанию)"
+                                    i18n::t("Системное (по умолчанию)", "System default")
                                 } else {
                                     self.devices
                                         .get(self.device_index - 1)
                                         .map(String::as_str)
-                                        .unwrap_or("Системное (по умолчанию)")
+                                        .unwrap_or(i18n::t(
+                                            "Системное (по умолчанию)",
+                                            "System default",
+                                        ))
                                 })
                                 .width(300.0)
                                 .show_ui(ui, |ui| {
                                     ui.selectable_value(
                                         &mut self.device_index,
                                         0,
-                                        "Системное (по умолчанию)",
+                                        i18n::t("Системное (по умолчанию)", "System default"),
                                     );
                                     for (index, device) in self.devices.iter().enumerate() {
                                         ui.selectable_value(
@@ -454,8 +549,11 @@ impl eframe::App for App {
                                         );
                                     }
                                 });
-                            if outlined_button(ui, "Обновить")
-                                .on_hover_text("Обновить список устройств")
+                            if outlined_button(ui, i18n::t("Обновить", "Refresh"))
+                                .on_hover_text(i18n::t(
+                                    "Обновить список устройств",
+                                    "Refresh the device list",
+                                ))
                                 .clicked()
                             {
                                 self.devices = list_output_devices();
@@ -465,20 +563,52 @@ impl eframe::App for App {
                             }
                         });
                     });
+
+                    ui.add_space(4.0);
+                    ui.horizontal(|ui| {
+                        ui.add_sized(
+                            [130.0, 22.0],
+                            egui::Label::new(i18n::t("Язык", "Language")),
+                        );
+                        let previous = self.language;
+                        egui::ComboBox::from_id_salt("language")
+                            .selected_text(self.language.label())
+                            .width(300.0)
+                            .show_ui(ui, |ui| {
+                                for choice in
+                                    [LangChoice::System, LangChoice::Ru, LangChoice::En]
+                                {
+                                    ui.selectable_value(
+                                        &mut self.language,
+                                        choice,
+                                        choice.label(),
+                                    );
+                                }
+                            });
+                        if self.language != previous {
+                            self.apply_language(ui.ctx());
+                        }
+                    });
                 });
 
                 ui.add_space(4.0);
-                section_card(ui, "Трей и автозапуск", |ui| {
+                section_card(ui, i18n::t("Трей и автозапуск", "Tray and autostart"), |ui| {
                     ui.label(
-                        RichText::new("Закрытие окна сворачивает программу в трей — сервер продолжает работать. Выход — через меню значка в трее.")
-                            .size(12.0)
-                            .color(MUTED),
+                        RichText::new(i18n::t(
+                            "Закрытие окна сворачивает программу в трей — сервер продолжает работать. Выход — через меню значка в трее.",
+                            "Closing the window hides the app to the tray — the server keeps running. To quit, use the tray icon menu.",
+                        ))
+                        .size(12.0)
+                        .color(MUTED),
                     );
                     ui.add_space(8.0);
                     if switch_row(
                         ui,
                         &mut self.autostart_enabled,
-                        "Запускать программу при входе в Windows",
+                        i18n::t(
+                            "Запускать программу при входе в Windows",
+                            "Start the app when Windows starts",
+                        ),
                     )
                     .changed()
                     {
@@ -486,20 +616,29 @@ impl eframe::App for App {
                             Ok(()) => {}
                             Err(err) => {
                                 self.autostart_enabled = autostart::is_autostart_enabled();
-                                applog::log(format!("Не удалось изменить автозапуск: {err}"));
+                                applog::log(format!(
+                                    "{}: {err}",
+                                    i18n::t(
+                                        "Не удалось изменить автозапуск",
+                                        "Failed to change autostart"
+                                    )
+                                ));
                             }
                         }
                     }
                     ui.add_space(4.0);
                     ui.label(
-                        RichText::new("При автозапуске программа стартует в трее и сразу запускает сервер.")
-                            .size(11.0)
-                            .color(MUTED),
+                        RichText::new(i18n::t(
+                            "При автозапуске программа стартует в трее и сразу запускает сервер.",
+                            "On autostart the app launches in the tray and starts the server immediately.",
+                        ))
+                        .size(11.0)
+                        .color(MUTED),
                     );
                 });
 
                 ui.add_space(4.0);
-                section_card(ui, "Журнал", |ui| {
+                section_card(ui, i18n::t("Журнал", "Log"), |ui| {
                     egui::Frame::none()
                         .fill(BG)
                         .rounding(egui::Rounding::same(12.0))
@@ -512,10 +651,13 @@ impl eframe::App for App {
                                 .show(ui, |ui| {
                                     if self.logs.is_empty() {
                                         ui.label(
-                                            RichText::new("Журнал пуст")
-                                                .monospace()
-                                                .size(12.0)
-                                                .color(DIM),
+                                            RichText::new(i18n::t(
+                                                "Журнал пуст",
+                                                "The log is empty",
+                                            ))
+                                            .monospace()
+                                            .size(12.0)
+                                            .color(DIM),
                                         );
                                     }
                                     for line in &self.logs {
@@ -609,7 +751,7 @@ fn fit_window(_ctx: &egui::Context) {
         SM_CYSCREEN,
     };
 
-    let title = HSTRING::from("PC Sound Link — сервер");
+    let title = HSTRING::from(i18n::window_title());
 
     unsafe {
         let Ok(hwnd) = FindWindowW(None, &title) else {

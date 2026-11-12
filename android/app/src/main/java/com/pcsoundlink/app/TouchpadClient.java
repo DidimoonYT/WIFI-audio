@@ -1,5 +1,6 @@
 package com.pcsoundlink.app;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -34,6 +35,7 @@ public class TouchpadClient {
     private static final int MAX_FRAME_BYTES = 8 * 1024 * 1024;
 
     private final String host;
+    private final Context context;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final ExecutorService sender = Executors.newSingleThreadExecutor();
     private volatile Listener listener;
@@ -47,7 +49,8 @@ public class TouchpadClient {
     private Thread acceptThread;
     private Thread readThread;
 
-    public TouchpadClient(String host) {
+    public TouchpadClient(Context context, String host) {
+        this.context = context.getApplicationContext();
         this.host = host;
     }
 
@@ -133,7 +136,7 @@ public class TouchpadClient {
 
                 sendControl(Protocol.control("screen_start").put("port", tcpPort));
                 started = true;
-                postStatus("Подключение к ПК…");
+                postStatus(context.getString(R.string.touchpad_status_starting));
 
                 server.setSoTimeout(8000);
                 Socket socket = null;
@@ -151,11 +154,11 @@ public class TouchpadClient {
                 }
                 server.close();
                 tcpServer = null;
-                postStatus("Экран идёт с ПК");
+                postStatus(context.getString(R.string.touchpad_status_streaming));
                 readFrames(socket);
                 closeQuietly(socket);
                 if (running) {
-                    postStatus("Переподключение к ПК…");
+                    postStatus(context.getString(R.string.touchpad_status_reconnecting));
                     Thread.sleep(1000);
                 }
             } catch (InterruptedException e) {
@@ -164,7 +167,7 @@ public class TouchpadClient {
                 if (!running) {
                     return;
                 }
-                postStatus("Ошибка тачпада: " + shortError(e));
+                postStatus(context.getString(R.string.touchpad_error, shortError(e)));
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ie) {
@@ -200,7 +203,7 @@ public class TouchpadClient {
             }
         } catch (Exception e) {
             if (running) {
-                postStatus("Соединение с экраном потеряно");
+                postStatus(context.getString(R.string.touchpad_status_lost));
             }
         } finally {
             closeQuietly(socket);

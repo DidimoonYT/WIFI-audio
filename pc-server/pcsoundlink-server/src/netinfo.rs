@@ -18,6 +18,8 @@ use windows::Win32::NetworkManagement::IpHelper::{
 use windows::Win32::NetworkManagement::Ndis::IfOperStatusUp;
 use windows::Win32::Networking::WinSock::{AF_INET, SOCKADDR, SOCKADDR_IN};
 
+use crate::i18n::t;
+
 const IF_TYPE_SOFTWARE_LOOPBACK: u32 = 24;
 const IF_TYPE_TUNNEL: u32 = 131;
 const ERROR_BUFFER_OVERFLOW: u32 = 111;
@@ -59,22 +61,43 @@ pub fn analyze() -> NetReport {
 
     if !vpn.is_empty() {
         warnings.push(format!(
-            "Похоже, включён VPN ({}). Он может мешать: телефон не найдёт компьютер, \
-             а звук будет прерываться. Если поиск не работает — отключите VPN.",
-            vpn.join(", ")
+            "{} ({}). {}",
+            t(
+                "Похоже, включён VPN",
+                "A VPN seems to be active"
+            ),
+            vpn.join(", "),
+            t(
+                "Он может мешать: телефон не найдёт компьютер, а звук будет прерываться. \
+                 Если поиск не работает — отключите VPN.",
+                "It may interfere: the phone may not find the computer and audio may stutter. \
+                 If discovery does not work, turn the VPN off."
+            )
         ));
     }
 
     match primary {
         Some(ip) if !ip.is_private() => warnings.push(format!(
-            "Сеть нестандартная: адрес {ip} не из домашнего диапазона. Возможно, \
-             включён VPN или мобильный интернет — телефон может не найти компьютер."
+            "{}: {ip} — {}. {}",
+            t("Сеть нестандартная", "Unusual network"),
+            t(
+                "адрес не из домашнего диапазона",
+                "the address is not in a private range"
+            ),
+            t(
+                "Возможно, включён VPN или мобильный интернет — телефон может не найти компьютер.",
+                "A VPN or mobile internet may be on — the phone may not find the computer."
+            )
         )),
         Some(_) => {}
         None => warnings.push(
-            "Похоже, нет подключения к локальной сети. Подключите компьютер и телефон \
-             к одному Wi-Fi."
-                .to_string(),
+            t(
+                "Похоже, нет подключения к локальной сети. Подключите компьютер и телефон \
+                 к одному Wi-Fi.",
+                "There seems to be no local network connection. Connect the computer and the \
+                 phone to the same Wi-Fi."
+            )
+            .to_string(),
         ),
     }
 
@@ -98,9 +121,16 @@ pub fn analyze() -> NetReport {
     if subnets.len() > 1 {
         if let Some(ip) = primary {
             warnings.push(format!(
-                "В компьютере несколько сетей ({}). Убедитесь, что телефон подключён \
-                 к той же сети, что и адрес {ip}.",
-                subnets.join(", ")
+                "{} ({}). {} {ip}.",
+                t(
+                    "В компьютере несколько сетей",
+                    "The computer has several networks"
+                ),
+                subnets.join(", "),
+                t(
+                    "Убедитесь, что телефон подключён к той же сети, что и адрес",
+                    "Make sure the phone is connected to the same network as address"
+                )
             ));
         }
     }
