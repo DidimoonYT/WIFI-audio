@@ -1,6 +1,6 @@
 # WIFI audio 🔊📱
 
-[Сайт](https://didimoonyt.github.io/WIFI-audio/) · [Скачать](https://github.com/DidimoonYT/WIFI-audio/releases) · [Дизайн-система](docs/design-prompt.md) · [Поддержать](https://www.donationalerts.com/r/didimoon)
+[Сайт](https://didimoonyt.github.io/WIFI-audio/) · [Скачать](https://github.com/DidimoonYT/WIFI-audio/releases) · [Поддержать](https://www.donationalerts.com/r/didimoon)
 
 **Передача звука с компьютера на телефон по локальной сети и Wi‑Fi.**
 Телефон превращается в беспроводные динамики для ПК: музыка, фильмы, игры и
