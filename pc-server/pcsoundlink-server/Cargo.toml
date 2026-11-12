@@ -1,6 +1,6 @@
 [package]
 name = "pcsoundlink-server"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "PC Sound Link — stream audio and screen from Windows to Android"
 authors = ["PcSoundLink"]

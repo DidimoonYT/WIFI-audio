@@ -664,26 +664,17 @@ impl eframe::App for App {
                             open_url(ANDROID_APP_URL);
                         }
                         ui.add_space(4.0);
-                        ui.horizontal_top(|ui| {
-                            let button_width = 168.0;
-                            let text_width = (ui.available_width() - button_width - 12.0).max(80.0);
-                            ui.allocate_ui_with_layout(
-                                egui::vec2(text_width, 0.0),
-                                egui::Layout::top_down(egui::Align::Min),
-                                |ui| {
-                                    ui.add(
-                                        egui::Label::new(
-                                            RichText::new(ANDROID_APP_URL).size(10.0).color(DIM),
-                                        )
-                                        .wrap(),
-                                    );
-                                },
+                        ui.horizontal(|ui| {
+                            ui.add(
+                                egui::Label::new(
+                                    RichText::new(ANDROID_APP_URL).size(11.0).color(DIM),
+                                )
+                                .wrap()
+                                .selectable(true),
                             );
-                            if outlined_button(
-                                ui,
-                                i18n::t("Копировать ссылку", "Copy link"),
-                            )
-                            .clicked()
+                            if copy_icon_button(ui)
+                                .on_hover_text(i18n::t("Копировать ссылку", "Copy link"))
+                                .clicked()
                             {
                                 ui.ctx().copy_text(ANDROID_APP_URL.to_string());
                                 self.link_copied_until =
@@ -784,6 +775,34 @@ fn section_card<R>(
         ui.add_space(6.0);
         add(ui)
     })
+}
+
+/// Небольшая квадратная кнопка с иконкой копирования (два листа).
+fn copy_icon_button(ui: &mut egui::Ui) -> egui::Response {
+    let (rect, response) =
+        ui.allocate_exact_size(egui::vec2(22.0, 22.0), egui::Sense::click());
+    if response.hovered() {
+        ui.painter()
+            .rect_filled(rect, egui::Rounding::same(6.0), CARD_ALT);
+    }
+    let color = if response.hovered() { BRAND } else { DIM };
+    let stroke = egui::Stroke::new(1.3_f32, color);
+    let rounding = egui::Rounding::same(2.0);
+    let c = rect.center();
+    // Задний лист смещён вправо-вверх, передний — влево-вниз.
+    let back = egui::Rect::from_min_size(
+        egui::pos2(c.x - 1.5, c.y - 5.5),
+        egui::vec2(8.0, 10.0),
+    );
+    let front = egui::Rect::from_min_size(
+        egui::pos2(c.x - 5.5, c.y - 3.5),
+        egui::vec2(8.0, 10.0),
+    );
+    let painter = ui.painter();
+    painter.rect_stroke(back, rounding, stroke);
+    painter.rect_filled(front, rounding, CARD);
+    painter.rect_stroke(front, rounding, stroke);
+    response
 }
 
 /// Второстепенная кнопка Material 3: прозрачная с контуром и синим текстом.
