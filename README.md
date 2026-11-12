@@ -1,6 +1,9 @@
 # WIFI audio 🔊📱
 
-![Downloads](https://img.shields.io/github/downloads/DidimoonYT/WIFI-audio/total?label=downloads&color=7DA2FF)
+[![Latest Release](https://img.shields.io/github/v/release/DidimoonYT/WIFI-audio?label=Release&style=for-the-badge&color=2ea44f)](https://github.com/DidimoonYT/WIFI-audio/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/DidimoonYT/WIFI-audio/total?style=for-the-badge&logo=github&color=0078d4)](https://github.com/DidimoonYT/WIFI-audio/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Donate](https://img.shields.io/badge/Donate-DonationAlerts-ff5f5f?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/didimoon)
 
 [Сайт](https://didimoonyt.github.io/WIFI-audio/) · [Скачать](https://github.com/DidimoonYT/WIFI-audio/releases) · [Поддержать](https://www.donationalerts.com/r/didimoon)
 

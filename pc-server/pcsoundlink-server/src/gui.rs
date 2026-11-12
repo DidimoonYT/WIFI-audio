@@ -53,6 +53,7 @@ pub struct App {
     last_net_check: Instant,
     tray: Option<Tray>,
     hwnd: isize,
+    link_copied_until: Option<Instant>,
 }
 
 fn window_hwnd(cc: &eframe::CreationContext<'_>) -> isize {
@@ -145,6 +146,7 @@ impl App {
             last_net_check: Instant::now(),
             tray,
             hwnd,
+            link_copied_until: None,
         };
         app.refresh_logs();
         app
@@ -662,7 +664,45 @@ impl eframe::App for App {
                             open_url(ANDROID_APP_URL);
                         }
                         ui.add_space(4.0);
-                        ui.label(RichText::new(ANDROID_APP_URL).size(10.0).color(DIM));
+                        ui.horizontal_top(|ui| {
+                            let button_width = 168.0;
+                            let text_width = (ui.available_width() - button_width - 12.0).max(80.0);
+                            ui.allocate_ui_with_layout(
+                                egui::vec2(text_width, 0.0),
+                                egui::Layout::top_down(egui::Align::Min),
+                                |ui| {
+                                    ui.add(
+                                        egui::Label::new(
+                                            RichText::new(ANDROID_APP_URL).size(10.0).color(DIM),
+                                        )
+                                        .wrap(),
+                                    );
+                                },
+                            );
+                            if outlined_button(
+                                ui,
+                                i18n::t("Копировать ссылку", "Copy link"),
+                            )
+                            .clicked()
+                            {
+                                ui.ctx().copy_text(ANDROID_APP_URL.to_string());
+                                self.link_copied_until =
+                                    Some(Instant::now() + Duration::from_secs(2));
+                                ui.ctx().request_repaint_after(Duration::from_secs(2));
+                            }
+                        });
+                        match self.link_copied_until {
+                            Some(until) if Instant::now() < until => {
+                                ui.label(
+                                    RichText::new(i18n::t("Ссылка скопирована", "Link copied"))
+                                        .size(11.0)
+                                        .color(BRAND),
+                                );
+                                ui.ctx().request_repaint_after(Duration::from_millis(200));
+                            }
+                            Some(_) => self.link_copied_until = None,
+                            None => {}
+                        }
                     },
                 );
 
