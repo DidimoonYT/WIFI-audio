@@ -17,18 +17,12 @@ use windows::Win32::UI::WindowsAndMessaging::{
     IsWindowVisible, SetForegroundWindow, ShowWindow, SW_HIDE, SW_SHOWNORMAL,
 };
 
-static QUIT_REQUESTED: AtomicBool = AtomicBool::new(false);
 static SHOULD_HIDE: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TrayAction {
     ToggleServer,
     Quit,
-}
-
-/// Запрошен ли выход из программы через меню трея.
-pub fn quit_requested() -> bool {
-    QUIT_REQUESTED.load(Ordering::SeqCst)
 }
 
 /// Программа сейчас должна быть скрыта в трее.
@@ -120,7 +114,6 @@ impl Tray {
                     }
                     egui_ctx.request_repaint();
                 } else if event.id == quit_id {
-                    QUIT_REQUESTED.store(true, Ordering::SeqCst);
                     // Показываем окно, иначе eframe не получит кадр и не завершится.
                     if !window_visible(hwnd) {
                         show_window(hwnd);
