@@ -300,11 +300,14 @@ section { padding: 76px 0; }
 }
 
 /* download */
-.download-grid .card { display: flex; flex-direction: column; gap: 14px; padding: 26px; }
-.download-grid .icon-badge { margin: 0; width: 52px; height: 52px; border-radius: 16px; }
+.download-grid .card { display: flex; flex-direction: column; gap: 14px; padding: 26px; }.download-grid .icon-badge { margin: 0; width: 52px; height: 52px; border-radius: 16px; }
 .download-grid .icon-badge svg { width: 26px; height: 26px; }
 .download-grid .meta { color: var(--dim); font-size: 12px; }
 .download-grid .btn { align-self: flex-start; margin-top: auto; }
+
+.support-card { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.support-card .support-text { flex: 1 1 320px; }
+.support-card .btn { flex: none; }
 
 /* faq */
 details {

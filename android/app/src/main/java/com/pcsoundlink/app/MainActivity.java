@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
     private Spinner spinnerServers;
     private MaterialButton btnConnect;
     private MaterialButton btnTouchpad;
+    private MaterialButton btnDonate;
     private EditText editManualIp;
     private MaterialSwitch switchAutoConnect;
     private MaterialSwitch switchMute;
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
         spinnerServers = findViewById(R.id.spinnerServers);
         btnConnect = findViewById(R.id.btnConnect);
         btnTouchpad = findViewById(R.id.btnTouchpad);
+        btnDonate = findViewById(R.id.btnDonate);
         editManualIp = findViewById(R.id.editManualIp);
         switchAutoConnect = findViewById(R.id.switchAutoConnect);
         switchMute = findViewById(R.id.switchMute);
@@ -161,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
         });
 
         btnTouchpad.setOnClickListener(v -> openTouchpad());
+        btnDonate.setOnClickListener(v -> openDonate());
 
         switchAutoConnect.setChecked(prefs.getBoolean("auto_connect", true));
         switchAutoConnect.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -406,6 +409,16 @@ public class MainActivity extends AppCompatActivity implements AudioEngine.Liste
         connectedServerName = target.name;
         StreamService.start(this);
         engine.connect(target);
+    }
+
+    private void openDonate() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW,
+                    android.net.Uri.parse("https://www.donationalerts.com/r/didimoon"));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, R.string.donate_error, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openTouchpad() {

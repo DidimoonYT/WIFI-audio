@@ -98,4 +98,8 @@
     <string name="err_mute_toggle">Failed to toggle PC sound: %1$s</string>
     <string name="log_muted_pc">PC speakers muted</string>
     <string name="log_unmuted_pc">PC sound turned on</string>
+    <string name="donate_title">Support the project</string>
+    <string name="donate_text">WIFI audio is free and has no ads. If the project is useful to you, you can support its development.</string>
+    <string name="donate_button">Donate</string>
+    <string name="donate_error">Could not open the donation page</string>
 </resources>

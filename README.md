@@ -1,6 +1,6 @@
 # WIFI audio 🔊📱
 
-[Сайт](https://didimoonyt.github.io/WIFI-audio/) · [Скачать](https://github.com/DidimoonYT/WIFI-audio/releases) · [Дизайн-система](docs/design-prompt.md)
+[Сайт](https://didimoonyt.github.io/WIFI-audio/) · [Скачать](https://github.com/DidimoonYT/WIFI-audio/releases) · [Дизайн-система](docs/design-prompt.md) · [Поддержать](https://www.donationalerts.com/r/didimoon)
 
 **Передача звука с компьютера на телефон по локальной сети и Wi‑Fi.**
 Телефон превращается в беспроводные динамики для ПК: музыка, фильмы, игры и
@@ -312,3 +312,14 @@ Material 3.
 `windows-audio`, `wasapi`, `low-latency`, `local-network`, `lan`, `udp`,
 `screen-mirroring`, `remote-touchpad`, `rust`, `java`, `material3`,
 `wireless-speakers`, `phone-as-speaker`.
+
+---
+
+## Поддержать проект
+
+WIFI audio — бесплатный проект без рекламы и подписок. Если он вам полезен,
+можно поддержать разработку:
+
+[**Поддержать на DonationAlerts**](https://www.donationalerts.com/r/didimoon)
+
+Спасибо за поддержку — она помогает выпускать обновления и новые функции.
