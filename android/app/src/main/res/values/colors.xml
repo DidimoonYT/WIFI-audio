@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand">#4F7CFF</color>
+    <color name="brand_dark">#0B2545</color>
+    <color name="brand_container">#DCE6FF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="status_blue">#4F7CFF</color>
+    <color name="status_green">#1BAA60</color>
+    <color name="status_amber">#E0A100</color>
+    <color name="status_red">#E5484D</color>
+    <color name="status_gray">#8B93A7</color>
+    <color name="launcher_background">#4F7CFF</color>
+    <color name="warning_bg">#FFF7ED</color>
+    <color name="warning_border">#FDBA74</color>
+    <color name="warning_text">#8C3E09</color>
+</resources>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Телефон с Wi-Fi и звуковыми волнами (phone-wifi-sound.svg). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:translateX="18"
+        android:translateY="18">
+
+        <!-- корпус телефона -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M32,14h32a8,8 0 0 1 8,8v52a8,8 0 0 1 -8,8H32a8,8 0 0 1 -8,-8V22a8,8 0 0 1 8,-8z" />
+
+        <!-- разговорный динамик -->
+        <path
+            android:pathData="M44,20h8"
+            android:strokeColor="#C7D2FE"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+
+        <!-- Wi-Fi на экране -->
+        <path
+            android:pathData="M40.58,38.58A10.5 10.5 0 0 1 55.42,38.58"
+            android:strokeColor="#4F46E5"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M44.11,42.11A5.5 5.5 0 0 1 51.89,42.11"
+            android:strokeColor="#4F46E5"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+        <path
+            android:fillColor="#4F46E5"
+            android:pathData="M48,46m-2.2,0a2.2,2.2 0 1 1 4.4,0a2.2,2.2 0 1 1 -4.4,0" />
+
+        <!-- индикатор home -->
+        <path
+            android:pathData="M43,76h10"
+            android:strokeColor="#C7D2FE"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+
+        <!-- звуковые волны -->
+        <path
+            android:pathData="M27.05,43.05A7 7 0 0 0 27.05,52.95"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M22.81,38.81A13 13 0 0 0 22.81,57.19"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M68.95,43.05A7 7 0 0 1 68.95,52.95"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M73.19,38.81A13 13 0 0 1 73.19,57.19"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+    </group>
+</vector>

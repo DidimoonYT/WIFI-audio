@@ -1,0 +1,172 @@
+//! Системный трей Windows.
+//!
+//! Иконка создаётся на главном потоке (там, где работает цикл сообщений winit).
+//! Фоновый поток слушает пункты меню и сам показывает/скрывает окно через
+//! Win32: скрытое окно winit не перерисовывается, поэтому одних
+//! `ViewportCommand` недостаточно.
+
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc;
+
+use tray_icon::{
+    menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem},
+    TrayIcon, TrayIconBuilder,
+};
+use windows::Win32::Foundation::HWND;
+use windows::Win32::UI::WindowsAndMessaging::{
+    IsWindowVisible, SetForegroundWindow, ShowWindow, SW_HIDE, SW_SHOWNORMAL,
+};
+
+static QUIT_REQUESTED: AtomicBool = AtomicBool::new(false);
+static SHOULD_HIDE: AtomicBool = AtomicBool::new(false);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TrayAction {
+    ToggleServer,
+    Quit,
+}
+
+/// Запрошен ли выход из программы через меню трея.
+pub fn quit_requested() -> bool {
+    QUIT_REQUESTED.load(Ordering::SeqCst)
+}
+
+/// Программа сейчас должна быть скрыта в трее.
+pub fn should_hide() -> bool {
+    SHOULD_HIDE.load(Ordering::SeqCst)
+}
+
+pub fn hide_window(hwnd: isize) {
+    SHOULD_HIDE.store(true, Ordering::SeqCst);
+    if hwnd != 0 {
+        unsafe {
+            let _ = ShowWindow(HWND(hwnd as *mut _), SW_HIDE);
+        }
+    }
+}
+
+pub fn show_window(hwnd: isize) {
+    SHOULD_HIDE.store(false, Ordering::SeqCst);
+    if hwnd != 0 {
+        unsafe {
+            let hwnd = HWND(hwnd as *mut _);
+            let _ = ShowWindow(hwnd, SW_SHOWNORMAL);
+            let _ = SetForegroundWindow(hwnd);
+        }
+    }
+}
+
+fn window_visible(hwnd: isize) -> bool {
+    hwnd != 0 && unsafe { IsWindowVisible(HWND(hwnd as *mut _)).as_bool() }
+}
+
+pub struct Tray {
+    icon: TrayIcon,
+    toggle_item: MenuItem,
+    tx: mpsc::Sender<TrayAction>,
+    rx: mpsc::Receiver<TrayAction>,
+    running: bool,
+}
+
+impl Tray {
+    pub fn new(
+        egui_ctx: eframe::egui::Context,
+        hwnd: isize,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        let (tx, rx) = mpsc::channel();
+
+        let menu = Menu::new();
+        let show_item = MenuItem::new("Показать окно", true, None);
+        let hide_item = MenuItem::new("Скрыть в трей", true, None);
+        let toggle_item = MenuItem::new("Запустить сервер", true, None);
+        let separator = PredefinedMenuItem::separator();
+        let quit_item = MenuItem::new("Выход", true, None);
+
+        menu.append(&show_item)?;
+        menu.append(&hide_item)?;
+        menu.append(&toggle_item)?;
+        menu.append(&separator)?;
+        menu.append(&quit_item)?;
+
+        let icon = TrayIconBuilder::new()
+            .with_menu(Box::new(menu))
+            .with_tooltip("PC Sound Link — сервер остановлен")
+            .with_icon(crate::icons::tray_icon()?)
+            .build()?;
+
+        // Единственный обработчик меню: фоновый поток.
+        let show_id = show_item.id().clone();
+        let hide_id = hide_item.id().clone();
+        let toggle_id = toggle_item.id().clone();
+        let quit_id = quit_item.id().clone();
+        let tx_events = tx.clone();
+        std::thread::Builder::new()
+            .name("tray-events".to_string())
+            .spawn(move || loop {
+                let Ok(event) = MenuEvent::receiver().recv() else {
+                    break;
+                };
+                if event.id == show_id {
+                    show_window(hwnd);
+                } else if event.id == hide_id {
+                    hide_window(hwnd);
+                } else if event.id == toggle_id {
+                    // Если окно скрыто, покажем его, чтобы GUI точно проснулся.
+                    if !window_visible(hwnd) {
+                        show_window(hwnd);
+                    }
+                    if tx_events.send(TrayAction::ToggleServer).is_err() {
+                        break;
+                    }
+                    egui_ctx.request_repaint();
+                } else if event.id == quit_id {
+                    QUIT_REQUESTED.store(true, Ordering::SeqCst);
+                    // Показываем окно, иначе eframe не получит кадр и не завершится.
+                    if !window_visible(hwnd) {
+                        show_window(hwnd);
+                    }
+                    if tx_events.send(TrayAction::Quit).is_err() {
+                        break;
+                    }
+                    egui_ctx.request_repaint();
+                }
+            })
+            .map_err(|err| -> Box<dyn std::error::Error> { Box::new(err) })?;
+
+        Ok(Self {
+            icon,
+            toggle_item,
+            tx,
+            rx,
+            running: false,
+        })
+    }
+
+    pub fn try_recv(&self) -> Option<TrayAction> {
+        self.rx.try_recv().ok()
+    }
+
+    pub fn set_server_running(&mut self, running: bool) {
+        if self.running == running {
+            return;
+        }
+        self.running = running;
+        let _ = self.toggle_item.set_text(if running {
+            "Остановить сервер"
+        } else {
+            "Запустить сервер"
+        });
+        let tooltip = if running {
+            "PC Sound Link — сервер запущен"
+        } else {
+            "PC Sound Link — сервер остановлен"
+        };
+        let _ = self.icon.set_tooltip(Some(tooltip));
+    }
+
+    /// Канал используется только для отладки/тестов, но держим его живым.
+    #[allow(dead_code)]
+    pub fn sender(&self) -> mpsc::Sender<TrayAction> {
+        self.tx.clone()
+    }
+}

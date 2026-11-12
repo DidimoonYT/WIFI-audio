@@ -1,0 +1,67 @@
+[package]
+name = "pcsoundlink-server"
+version = "1.0.0"
+edition = "2021"
+description = "PC Sound Link — stream audio and screen from Windows to Android"
+authors = ["PcSoundLink"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = true
+opt-level = "z"
+panic = "abort"
+
+[dependencies]
+# GUI
+eframe = { version = "0.29", default-features = false, features = ["glow", "default_fonts"] }
+
+# Windows audio capture / playback-device enumeration
+wasapi = "0.27"
+
+# Win32: volume, GDI screen capture, mouse and keyboard
+windows = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_Graphics_Gdi",
+    "Win32_Graphics_Dwm",
+    "Win32_Media_Audio",
+    "Win32_Media_Audio_Endpoints",
+    "Win32_Media_Multimedia",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Variant",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Shell",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_NetworkManagement_WindowsFirewall",
+    "Win32_Networking_WinSock",
+] }
+
+# Networking helpers
+if-addrs = "0.15"
+
+# JPEG encoding
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+
+# Serialization / utilities
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+uuid = { version = "1.7", features = ["v4"] }
+hostname = "0.4"
+dirs = "5.0"
+clap = { version = "4.5", features = ["derive"] }
+winreg = "0.11"
+raw-window-handle = "0.6"
+
+# System tray
+tray-icon = "0.11"
+
+[build-dependencies]
+resvg = "0.43"
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"

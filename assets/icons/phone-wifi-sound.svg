@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-labelledby="ttl desc">
+  <title id="ttl">Phone with Wi-Fi and sound</title>
+  <desc id="desc">A smartphone showing a Wi-Fi symbol on its screen, with sound waves on both sides.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1" />
+      <stop offset="1" stop-color="#a855f7" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+
+  <g transform="scale(5.333333)">
+    <!-- phone body -->
+    <rect x="32" y="14" width="32" height="68" rx="8" fill="#fff" />
+
+    <!-- speaker slit -->
+    <path d="M44 20h8" fill="none" stroke="#c7d2fe" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Wi-Fi on the screen -->
+    <path d="M40.58 38.58A10.5 10.5 0 0 1 55.42 38.58" fill="none" stroke="#4f46e5"
+          stroke-width="4" stroke-linecap="round" />
+    <path d="M44.11 42.11A5.5 5.5 0 0 1 51.89 42.11" fill="none" stroke="#4f46e5"
+          stroke-width="4" stroke-linecap="round" />
+    <circle cx="48" cy="46" r="2.2" fill="#4f46e5" />
+
+    <!-- home indicator -->
+    <path d="M43 76h10" fill="none" stroke="#c7d2fe" stroke-width="4" stroke-linecap="round" />
+
+    <!-- sound waves -->
+    <g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round">
+      <path d="M27.05 43.05A7 7 0 0 0 27.05 52.95" />
+      <path d="M22.81 38.81A13 13 0 0 0 22.81 57.19" />
+      <path d="M68.95 43.05A7 7 0 0 1 68.95 52.95" />
+      <path d="M73.19 38.81A13 13 0 0 1 73.19 57.19" />
+    </g>
+  </g>
+</svg>

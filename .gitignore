@@ -1,0 +1,40 @@
+# ---- Rust / Windows server ----
+pc-server/pcsoundlink-server/target/
+pc-server/PcSoundLinkServer.exe
+*.pdb
+*.exe
+*.msi
+*.zip
+
+# ---- Android / Gradle ----
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.keystore
+*.jks
+
+# ---- IDE / editors ----
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# ---- OS ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- Прочее ----
+__pycache__/
+*.py[cod]
+.env
+/tmp/
