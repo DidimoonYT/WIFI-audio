@@ -1,5 +1,7 @@
 # WIFI audio 🔊📱
 
+[Сайт](https://didimoonyt.github.io/WIFI-audio/) · [Скачать](https://github.com/DidimoonYT/WIFI-audio/releases) · [Дизайн-система](docs/design-prompt.md)
+
 **Передача звука с компьютера на телефон по локальной сети и Wi‑Fi.**
 Телефон превращается в беспроводные динамики для ПК: музыка, фильмы, игры и
 системные звуки Windows играют на Android почти без задержки. Интернет не нужен —
